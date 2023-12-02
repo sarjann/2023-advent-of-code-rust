@@ -1,5 +1,6 @@
 use std::fs;
 
 pub fn load(path: &str) -> String {
-    fs::read_to_string(path).expect("Failed to read file")
+    let new_path = format!("src/{}", path);
+    fs::read_to_string(new_path).expect("Failed to read file")
 }
