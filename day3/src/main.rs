@@ -14,6 +14,7 @@ impl Display for Point {
         write!(f, "({}, {})", self.i, self.j)
     }
 }
+
 impl Hash for Point {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.i.hash(state);
