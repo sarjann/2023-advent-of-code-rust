@@ -11,9 +11,19 @@ fn get_nums_from_line(line: String) -> Vec<i64> {
     values
 }
 
+fn get_value(line: String) -> i64 {
+    let value = line
+        .split(":")
+        .nth(1)
+        .unwrap()
+        .replace(" ", "")
+        .parse::<i64>()
+        .unwrap();
+    value
+}
+
 fn get_points(time: i64, distance: i64) -> i64 {
     // Solving quadratic equation and distance between intercepts
-    println!("time:{time}-distance:{distance}");
     let quad_sqrt_term = ((time.pow(2) - 4 * distance) as f64).sqrt();
 
     let mut lb_float: f64 = ((time as f64) - quad_sqrt_term) / 2.;
@@ -38,6 +48,8 @@ fn get_points(time: i64, distance: i64) -> i64 {
 fn main() {
     let input = load("input.txt");
     let data: Vec<&str> = input.lines().collect();
+
+    // Part 1
     let times = get_nums_from_line(data[0].to_string());
     let distances = get_nums_from_line(data[1].to_string());
 
@@ -51,5 +63,11 @@ fn main() {
         total_points_p1 *= points
     }
 
-    println!("Total for Part 1 is {total_points_p1}")
+    // Part 2
+    let time = get_value(data[0].to_string());
+    let distance = get_value(data[1].to_string());
+    let total_points_p2 = get_points(time, distance);
+
+    println!("Total for Part 1 is {total_points_p1}");
+    println!("Total for Part 2 is {total_points_p2}");
 }
