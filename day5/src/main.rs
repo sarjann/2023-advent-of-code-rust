@@ -1,11 +1,15 @@
 use std::collections::HashMap;
+use std::sync::{mpsc, Arc};
+use std::thread::{self};
 use utils::load;
 
+#[derive(Clone, Debug)]
 struct Mapper {
     to: String,
     ranges: Vec<Range>,
 }
 
+#[derive(Clone, Debug)]
 struct Range {
     dest: u64,
     source: u64,
@@ -92,7 +96,7 @@ fn recurse_mappers(mappers: &HashMap<String, Mapper>, source: &str, i: u64) -> u
         return o;
     }
 
-    recurse_mappers(mappers, &mapper.to , o)
+    recurse_mappers(mappers, &mapper.to, o)
 }
 
 fn part1(mappers: &HashMap<String, Mapper>, seeds: &Vec<u64>) -> u64 {
@@ -108,20 +112,49 @@ fn part1(mappers: &HashMap<String, Mapper>, seeds: &Vec<u64>) -> u64 {
 }
 
 fn part2(mappers: &HashMap<String, Mapper>, seeds: &Vec<u64>) -> u64 {
-    let mut min: Option<u64> = None;
+    let mut global_min: Option<u64> = None;
+
+    let (tx, rx) = mpsc::channel::<Option<u64>>();
+    let arc_mappers = Arc::new(mappers.clone());
+
+    let rtx = Arc::new(tx.clone());
 
     let length = seeds.len();
-    for i in 0..length/2 {
-        let start = seeds[2*i];
-        let range_length = seeds[2*i + 1];
-        for j in start..start+range_length{
-            let res = recurse_mappers(&mappers, "seed", j);
-            if min.is_none() || res < min.unwrap() {
-                min = Some(res);
-            };
+    for i in 0..length / 2 {
+        let tx_i = rtx.clone();
+        let idx = i;
+        let mp = arc_mappers.clone();
+        let sds = seeds.clone();
+
+        thread::spawn(move || {
+            let mut min: Option<u64> = None;
+            let start = sds[2 * idx];
+            let range_length = sds[2 * idx + 1];
+            for j in start..start + range_length {
+                let res = recurse_mappers(&mp, "seed", j);
+                if min.is_none() || res < min.unwrap() {
+                    min = Some(res);
+                };
+            }
+            tx_i.send(min).unwrap();
+        });
+    }
+    let mut resolved_count = 0;
+    for received in rx {
+        match received {
+            Some(x) => {
+                if global_min.is_none() || x < global_min.unwrap() {
+                    global_min = Some(x);
+                }
+                resolved_count += 1;
+                if resolved_count == length / 2 {
+                    break;
+                }
+            }
+            _ => {}
         }
     }
-    min.unwrap()
+    global_min.unwrap()
 }
 
 fn main() {
