@@ -6,8 +6,18 @@ version = 3
 name = "day7"
 version = "0.1.0"
 dependencies = [
+ "part1",
+ "part2",
  "utils",
 ]
+
+[[package]]
+name = "part1"
+version = "0.1.0"
+
+[[package]]
+name = "part2"
+version = "0.1.0"
 
 [[package]]
 name = "utils"
