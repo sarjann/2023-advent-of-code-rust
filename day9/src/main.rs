@@ -1,7 +1,6 @@
 use utils::load;
 
 fn parse_data(data: String) -> Vec<Vec<i64>> {
-    let mut data = data;
     let inputs: Vec<Vec<i64>> = data
         .lines()
         .map(|line| {
@@ -51,6 +50,43 @@ fn get_score_part_1(input: &Vec<i64>) -> i64 {
     score
 }
 
+fn get_score_part_2(input: &Vec<i64>) -> i64 {
+    let mut head_idx = 0;
+    let mut state: Vec<Vec<i64>> = vec![input.to_vec()];
+
+    // Generate Initial
+    while !all_zero(&state[head_idx]) {
+        let mut new_head: Vec<i64> = vec![];
+        let length = state[head_idx].len();
+        let mut prev_val = state[head_idx][length - 1];
+        for val in state[head_idx].iter().rev().skip(1) {
+            new_head.push(val - prev_val);
+            prev_val = *val;
+        }
+
+        new_head.reverse();
+        state.push(new_head);
+        head_idx += 1;
+    }
+
+    // Calculate new values
+    let mut prev_new_val: i64 = 0;
+    for idx in (0..state.len()).rev() {
+        let current_head = &state[idx];
+        prev_new_val = current_head[0] + prev_new_val;
+    }
+    let score = prev_new_val;
+    score
+}
+
+fn part2(inputs: &Vec<Vec<i64>>) -> i64 {
+    let total: i64 = inputs
+        .iter()
+        .map(|nums| -> i64 { get_score_part_2(nums) })
+        .sum::<i64>();
+    total
+}
+
 fn part1(inputs: &Vec<Vec<i64>>) -> i64 {
     let total: i64 = inputs
         .iter()
@@ -63,5 +99,8 @@ fn main() {
     let data = load("input.txt");
     let inputs = parse_data(data);
     let part_1_result = part1(&inputs);
-    println!("Result for Part 1 is: {}", part_1_result)
+    println!("Result for Part 1 is: {}", part_1_result);
+
+    let part_2_result = part2(&inputs);
+    println!("Result for Part 2 is: {}", part_2_result);
 }
